@@ -31,11 +31,12 @@ def get_lower_and_upper_bounds(df, col, k=1.5):
 
 ############## Child Functions for IQR / Outliers ###########################
 
-def get_iqr_stats(df, col, k=1.5):
+        
+def get_plot_iqr_stats(df, col, k=1.5):
     '''
-    This function will take in a pandas Series, and run metrics to determine quantiles, IQR, and upper/lower fences.
+    This function will take in a pandas Series and plot a histogram and boxplot, with whiskers set based on value of k.
     '''
-
+    
     # Find the lower and upper quartiles
     q_25, q_75 = df[col].quantile([0.25, 0.75])
     # Find the Inner Quartile Range
@@ -57,20 +58,18 @@ IQR: {q_iqr}
 Lower Fence: {q_lower}
 Upper Fence: {q_upper}
 ''')
-
+    print(f'{col} Lower Outliers')
     display(outliers_lower)
-
+    print(f'{col} Upper Outliers')
     display(outliers_upper)
-
+    print(f'{col} All Outliers')
     display(outliers_all)
-        
-def plot_iqr_stats(df, col, k=1.5):
-    '''
-    This function will take in a pandas Series and plot a histogram and boxplot, with whiskers set based on value of k.
-    '''
+    
     plt.figure(figsize=(16,4))
     plt.subplot(1, 2, 1)
     sns.histplot(data = df, x = col, kde=True)
+    plt.axvline(x = q_lower, color = 'orange')
+    plt.axvline(x = q_upper, color= 'orange')
     plt.title(col)
     plt.subplot(1, 2, 2)
     sns.boxplot(x=df[col], data=df, whis=k)
@@ -78,25 +77,41 @@ def plot_iqr_stats(df, col, k=1.5):
     plt.show()
 
         
-def get_plot_iqr_stats(df, col, k=1.5):
-    '''
-    This function takes in a pandas Series, and combines the get_iqr_stats function and plot_iqr_stats to return numerical and graphical data for the column
-    '''
-    return get_iqr_stats(df, col, k=1.5), plot_iqr_stats(df, col, k=1.5)
+
 
 def whole_df_iqr(df, k=1.5):
     col_list = list(df.select_dtypes(include=['int', 'float'], exclude='O'))
     
     for col in col_list:
-        get_plot_iqr_stats(df, col, k=1.5)
+        get_plot_iqr_stats(df, col, k=k)
         
     return df.info()
+
+
+################ zscore functions ###########################################
+
+def add_zscore_cols(df):
     
+    col_list = list(df.select_dtypes(include=['int', 'float'], exclude='O'))
     
-    
+    for col in col_list:
+        z_scores = pd.Series((df[col] - df[col].mean()) / df[col].std())
+        df[f'{col}_zscore'] = z_scores
+        
+    return df
     
 
-# This function will take in an entire dataframe, and operate on a lit of columns...
+def get_zscore_info(df, sigma=2):
+    
+    col_list = list(df.select_dtypes(include=['int', 'float'], exclude='O'))
+    
+    for col in col_list:
+        
+    
+    
+########################## Way too Rabbit-Holey ##############################
+
+# This function will take in an entire dataframe, and operate on a list of columns...
 
 def get_low_and_up_bounds_df(df, k=1.5, sort_values=False):
     '''
